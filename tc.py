@@ -7,6 +7,7 @@ tc.py <command> [<args>]
 Where command is the type of build you with to invoke:
     linux        Neo4j Linux
     windows      Neo4j Windows
+    power        Neo4j Power8
     har          HA Robustness
 """
 # StdLib imports first
@@ -43,6 +44,7 @@ _REQUESTPROPERTYBASE = '\n    <property name="{name}" value="{value}"/>'
 _NEO4JLINUX_ID = "JonasHaRequests_Neo4jCustom"
 _HAR_ID = "JonasHaRequests_HarBranchArtifacts"
 _WIN_ID = "JonasHaRequests_Neo4jCustomWindows"
+_POWER_ID = "JonasRequests_Neo4jCustomPower8"
 
 _LINUX_JDKS = ['openjdk-8', 'openjdk-7',
                'oracle-jdk-8', 'oracle-jdk-7',
@@ -176,6 +178,16 @@ def start_ha(user, password, url, personal, branch, remote, arguments):
     data = request_xml(_HAR_ID, personal, branch, remote, props)
     send_request(user, password, url, data)
 
+def start_power(user, password, url, personal, branch, remote,
+                  mvngoals, mvnargs):
+    """
+    Start a custom power build
+    """
+    props = dict_as_properties({'maven-goals': mvngoals,
+                                'maven-args': mvnargs})
+    data = request_xml(_POWER_ID, personal, branch, remote, props)
+    send_request(user, password, url, data)
+
 
 class TC(object):
 
@@ -238,6 +250,16 @@ class TC(object):
         start_ha(args.user, args.password, args.teamcity, args.personal,
                  args.branch, args.remote, args.arguments)
 
+    def power(self, subargs):
+        parser = ArgumentParser(description="Neo4j power8",
+                                parents=[_PARSER, _NEO4JPARSERBASE])
+
+        args = parser.parse_args(subargs)
+
+        start_power(args.user, args.password, args.teamcity, args.personal,
+                      args.branch, args.remote,
+                      args.maven_goals,
+                      tc_mvn_args(args.maven_args))
 
 if __name__ == "__main__":
     TC(sys.argv[1:])
